@@ -1,7 +1,6 @@
 package com.spring.practice.minaz.demoproject.model;
 
 import com.fasterxml.jackson.annotation.*;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;

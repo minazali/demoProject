@@ -3,6 +3,7 @@ package com.spring.practice.minaz.demoproject.utility;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.spring.practice.minaz.demoproject.configuration.FilepathConfiguration;
 import com.spring.practice.minaz.demoproject.exceptions.GenericException;
 import com.spring.practice.minaz.demoproject.services.DepartmentService;
 import com.spring.practice.minaz.demoproject.services.EmployeeService;
@@ -23,42 +24,47 @@ public class DataUpload {
     @Value("${mode}")
     private String mode;
 
-    @Value("${department.filepath}")
-    private String departmentFilepath;
+    @Value("${mode1}")
+    private String mode1;
 
-    @Value("${employee.filepath}")
-    private String employeeFilepath;
-
-    @Value("${mappingFilepath}")
-    private String mappingFilepath;
-
-    @Autowired
     private DepartmentFileUpload departmentFileUpload;
 
-    @Autowired
     private EmployeeFileUpload employeeFileUpload;
 
-    @Autowired
     private DepartmentService departmentService;
 
-    @Autowired
     private EmployeeService employeeService;
+
+    private FilepathConfiguration filepathConfiguration;
+
+    @Autowired
+    public DataUpload(DepartmentFileUpload departmentFileUpload,EmployeeFileUpload employeeFileUpload,DepartmentService departmentService,EmployeeService employeeService){
+        this.departmentFileUpload = departmentFileUpload;
+        this.employeeFileUpload = employeeFileUpload;
+        this.departmentService = departmentService;
+        this.employeeService = employeeService;
+    }
+
+    @Autowired
+    public void setFilepathConfiguration(FilepathConfiguration filepathConfiguration) {
+        this.filepathConfiguration = filepathConfiguration;
+    }
 
     public void process() {
         Function<Boolean, Boolean> uploadEmployees = b -> {
             if (b)
-                return employeeFileUpload.uploadEmployeeData(employeeFilepath);
+                return employeeFileUpload.uploadEmployeeData(filepathConfiguration.getEmployeePath());
             else
                 return false;
         };
-        if (mode.equalsIgnoreCase("CREATE") && departmentFilepath != null && employeeFilepath != null) {
+        if (mode.equalsIgnoreCase("CREATE") && filepathConfiguration.getDepartmentPath() != null && filepathConfiguration.getEmployeePath() != null) {
             CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
-                return departmentFileUpload.uploadDepartmentData(departmentFilepath);
+                return departmentFileUpload.uploadDepartmentData(filepathConfiguration.getDepartmentPath());
             }).thenApplyAsync(uploadEmployees);
             try {
                 boolean result = completableFuture.get();
                 if (result) {
-                    createMapping(mappingFilepath);
+                    createMapping(filepathConfiguration.getMappingPath());
                 }
                 System.out.println("Initial load status: " + result);
             } catch (InterruptedException | ExecutionException e) {

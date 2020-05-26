@@ -12,6 +12,7 @@ public class DemoApplication {
 
 		ConfigurableApplicationContext context = SpringApplication.run(DemoApplication.class,args);
 		context.getBean(DataUpload.class).process();
+		//DBConfiguration configuration = context.getBean(DBConfiguration.class);
+		//System.out.println("Mode is "+ configuration.getUrl());
 		}
-
 }
